@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadastro de Motorista Agregado</title>
+  <meta name="description" content="Formulário de cadastro para motoristas agregados. Preencha seus dados pessoais, veículo e documentação." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --brand-red:   #AC2429;
+      --brand-red-dark: #8a1c20;
+      --brand-text:  #232323;
+      --brand-muted: #6C757D;
+      --brand-border:#DFDFDF;
+      --brand-inp-text: #828282;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: 'Roboto', sans-serif; color: var(--brand-text); background: #F5F5F5; }
+    h1,h2,h3,h4,h5,.section-title,.sub-section-title,.section-badge { font-family: 'Poppins', sans-serif; }
+
+    /* ── CARDS ── */
+    .section-card {
+      background: #FFFFFF;
+      border: 1px solid var(--brand-border);
+      border-radius: 4px;
+      padding: 28px;
+      margin-bottom: 20px;
+      box-shadow: none;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--brand-border);
+    }
+    .section-badge {
+      background: var(--brand-red);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 4px;
+      padding: 3px 10px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--brand-text);
+      letter-spacing: 0.2px;
+    }
+
+    /* ── LABELS ── */
+    .field-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--brand-muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: 'Roboto', sans-serif;
+    }
+    .field-label .required { color: var(--brand-red); margin-left: 2px; }
+
+    /* ── INPUTS (brand spec: border-radius 0px) ── */
+    .field-input {
+      width: 100%;
+      border: 1px solid var(--brand-border);
+      border-radius: 0px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: 'Roboto', sans-serif;
+      color: var(--brand-inp-text);
+      background: #FFFFFF;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+      box-shadow: none;
+    }
+    .field-input:focus {
+      border-color: var(--brand-red);
+      box-shadow: 0 0 0 2px rgba(172,36,41,0.12);
+    }
+    .field-input.error { border-color: var(--brand-red); background: #fff5f5; }
+    .field-input::placeholder { color: #BDBDBD; }
+    select.field-input { cursor: pointer; }
+
+    /* ── RADIO / CHECKBOX ── */
+    .radio-group { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--brand-text);
+      font-family: 'Roboto', sans-serif;
+    }
+    .radio-option input[type="radio"] { accent-color: var(--brand-red); width: 16px; height: 16px; }
+    .checkbox-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--brand-text);
+      line-height: 1.6;
+      font-family: 'Roboto', sans-serif;
+    }
+    .checkbox-label input[type="checkbox"] { accent-color: var(--brand-red); width: 17px; height: 17px; margin-top: 2px; flex-shrink: 0; }
+
+    /* ── BUTTON (brand spec: bg #AC2429, radius 4px) ── */
+    .btn-submit {
+      background: var(--brand-red);
+      color: #FFFFFF;
+      font-family: 'Poppins', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      border: 1px solid var(--brand-red);
+      border-radius: 4px;
+      padding: 14px 40px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 220px;
+      justify-content: center;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .btn-submit:hover:not(:disabled) { background: var(--brand-red-dark); transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── SPINNER ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── ALERTS ── */
+    .alert-success {
+      background: #F0FDF4;
+      border-left: 4px solid #22C55E;
+      border-radius: 0;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: #166534;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .alert-error {
+      background: #FFF1F2;
+      border-left: 4px solid var(--brand-red);
+      border-radius: 0;
+      padding: 16px 20px;
+      color: var(--brand-red-dark);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* ── SUB-SECTIONS ── */
+    .sub-section {
+      background: #FAFAFA;
+      border: 1px solid var(--brand-border);
+      border-radius: 0;
+      padding: 18px;
+      margin-top: 6px;
+    }
+    .sub-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--brand-red);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--brand-border);
+    }
+
+    /* ── HEADER BRAND BAR ── */
+    .brand-topbar {
+      background: var(--brand-red);
+      height: 4px;
+      width: 100%;
+    }
+
+    #proprietario-section { transition: all 0.3s ease; }
+
+    /* ── UPLOAD ZONES ── */
+    .upload-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed var(--brand-border);
+      background: #FAFAFA;
+      padding: 28px 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      text-align: center;
+      gap: 8px;
+      min-height: 140px;
+    }
+    .upload-zone:hover { border-color: var(--brand-red); background: #fff5f5; }
+    .upload-zone.has-file { border-color: #22C55E; background: #f0fdf4; }
+    .upload-label-text { font-size: 13px; color: #6C757D; font-family: 'Roboto', sans-serif; }
+    .upload-hint { font-size: 11px; color: #BDBDBD; font-family: 'Roboto', sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen" style="background:#F5F5F5">
+
+  <!-- HEADER -->
+  <div class="brand-topbar"></div>
+  <header class="bg-white shadow-sm sticky top-0 z-50" style="border-bottom:2px solid #DFDFDF">
+    <div class="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="https://acertaexpress.com.br/" target="_blank" rel="noopener">
+        <img src="https://acertaexpress.com.br/images/logo-black-white.png"
+             alt="Acerta Express"
+             style="height:44px; width:auto; object-fit:contain;"
+             onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex'" />
+        <div id="logo-fallback" style="display:none; align-items:center; gap:6px;">
+          <span style="font-family:'Poppins',sans-serif; font-weight:800; font-size:18px; color:#AC2429;">ACERTA</span>
+          <span style="font-family:'Poppins',sans-serif; font-weight:400; font-size:18px; color:#6C757D;">EXPRESS</span>
+        </div>
+      </a>
+      <!-- Page title -->
+      <div class="text-right">
+        <h1 style="font-family:'Poppins',sans-serif; font-size:13px; font-weight:700; color:#232323; line-height:1.2; margin:0;">Cadastro de Motorista Agregado</h1>
+        <p style="font-size:11px; color:#6C757D; margin:0;">Preencha todos os campos obrigatórios</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-8">
+
+    <!-- ALERT AREA -->
+    <div id="alert-area" class="mb-6 hidden"></div>
+
+    <form id="form-cadastro" novalidate>
+
+      <!-- SEÇÃO 1: DADOS DO MOTORISTA -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-badge">01</span>
+          <span class="section-title">Dados do Motorista</span>
+        </div>
+
+        <!-- Dados Pessoais -->
+        <div class="sub-section mb-4">
+          <p class="sub-section-title">Identificação Pessoal</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="lg:col-span-2">
+              <label class="field-label" for="nome">Nome Completo <span class="required">*</span></label>
+              <input class="field-input" type="text" id="nome" name="nome" placeholder="Nome completo" required />
+            </div>
+            <div>
+              <label class="field-label" for="cpf">CPF <span class="required">*</span></label>
+              <input class="field-input" type="text" id="cpf" name="cpf" placeholder="000.000.000-00" maxlength="14" required />
+            </div>
+            <div>
+              <label class="field-label" for="rg">RG</label>
+              <input class="field-input" type="text" id="rg" name="rg" placeholder="Ex: 12.345.678-9" />
+            </div>
+            <div>
+              <label class="field-label" for="rg_estado">Estado Emissor RG</label>
+              <select class="field-input" id="rg_estado" name="rg_estado">
+                <option value="">Selecione...</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="rg_emissao">Data de Emissão RG</label>
+              <input class="field-input" type="date" id="rg_emissao" name="rg_emissao" />
+            </div>
+            <div>
+              <label class="field-label" for="data_nascimento">Data de Nascimento <span class="required">*</span></label>
+              <input class="field-input" type="date" id="data_nascimento" name="data_nascimento" required />
+            </div>
+            <div>
+              <label class="field-label" for="nome_pai">Nome do Pai</label>
+              <input class="field-input" type="text" id="nome_pai" name="nome_pai" placeholder="Nome do pai" />
+            </div>
+            <div>
+              <label class="field-label" for="nome_mae">Nome da Mãe</label>
+              <input class="field-input" type="text" id="nome_mae" name="nome_mae" placeholder="Nome da mãe" />
+            </div>
+          </div>
+        </div>
+
+        <!-- CNH e RNTRC -->
+        <div class="sub-section mb-4">
+          <p class="sub-section-title">Habilitação e RNTRC (ANTT)</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="field-label" for="rntrc">RNTRC (ANTT)</label>
+              <input class="field-input" type="text" id="rntrc" name="rntrc" placeholder="Nº RNTRC (ANTT)" />
+            </div>
+            <div>
+              <label class="field-label" for="cnh">CNH <span class="required">*</span></label>
+              <input class="field-input" type="text" id="cnh" name="cnh" placeholder="Número da CNH" required />
+            </div>
+            <div>
+              <label class="field-label" for="cnh_registro">Nº Registro CNH</label>
+              <input class="field-input" type="text" id="cnh_registro" name="cnh_registro" placeholder="Nº Registro" />
+            </div>
+            <div>
+              <label class="field-label" for="cnh_uf">UF Emissora CNH</label>
+              <select class="field-input" id="cnh_uf" name="cnh_uf">
+                <option value="">Selecione...</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="cnh_primeira_hab">Data 1ª Habilitação</label>
+              <input class="field-input" type="date" id="cnh_primeira_hab" name="cnh_primeira_hab" />
+            </div>
+            <div>
+              <label class="field-label" for="cnh_vencimento">Vencimento CNH</label>
+              <input class="field-input" type="date" id="cnh_vencimento" name="cnh_vencimento" />
+            </div>
+            <div>
+              <label class="field-label" for="cnh_categoria">Categoria CNH</label>
+              <select class="field-input" id="cnh_categoria" name="cnh_categoria">
+                <option value="">Selecione...</option>
+                <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option>
+                <option>AB</option><option>AC</option><option>AD</option><option>AE</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Endereço -->
+        <div class="sub-section mb-4">
+          <p class="sub-section-title">Endereço</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="field-label" for="cep">CEP</label>
+              <input class="field-input" type="text" id="cep" name="cep" placeholder="00000-000" maxlength="9" />
+            </div>
+            <div class="lg:col-span-2">
+              <label class="field-label" for="endereco">Endereço</label>
+              <input class="field-input" type="text" id="endereco" name="endereco" placeholder="Rua, Av, número..." />
+            </div>
+            <div>
+              <label class="field-label" for="bairro">Bairro</label>
+              <input class="field-input" type="text" id="bairro" name="bairro" placeholder="Bairro" />
+            </div>
+            <div>
+              <label class="field-label" for="cidade">Cidade</label>
+              <input class="field-input" type="text" id="cidade" name="cidade" placeholder="Cidade" />
+            </div>
+            <div>
+              <label class="field-label" for="estado">Estado</label>
+              <select class="field-input" id="estado" name="estado">
+                <option value="">Selecione...</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Região -->
+        <div class="sub-section mb-4">
+          <p class="sub-section-title">Região de Atuação</p>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="regiao" value="Norte" /> Norte</label>
+            <label class="radio-option"><input type="radio" name="regiao" value="Nordeste" /> Nordeste</label>
+            <label class="radio-option"><input type="radio" name="regiao" value="Centro-Oeste" /> Centro-Oeste</label>
+            <label class="radio-option"><input type="radio" name="regiao" value="Sudeste" /> Sudeste</label>
+            <label class="radio-option"><input type="radio" name="regiao" value="Sul" /> Sul</label>
+          </div>
+        </div>
+
+        <!-- Contato -->
+        <div class="sub-section mb-4">
+          <p class="sub-section-title">Contato</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="field-label" for="celular">Celular / WhatsApp <span class="required">*</span></label>
+              <input class="field-input" type="text" id="celular" name="celular" placeholder="(00) 00000-0000" maxlength="15" required />
+            </div>
+            <div>
+              <label class="field-label" for="tel_residencial">Telefone Residencial</label>
+              <input class="field-input" type="text" id="tel_residencial" name="tel_residencial" placeholder="(00) 0000-0000" maxlength="14" />
+            </div>
+            <div>
+              <label class="field-label" for="email">E-mail</label>
+              <input class="field-input" type="email" id="email" name="email" placeholder="email@exemplo.com" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Referências -->
+        <div class="sub-section mb-4">
+          <p class="sub-section-title">Referências Pessoais</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="field-label" for="ref1_nome">Referência 1 — Nome</label>
+              <input class="field-input" type="text" id="ref1_nome" name="ref1_nome" placeholder="Nome do contato" />
+            </div>
+            <div>
+              <label class="field-label" for="ref1_tel">Referência 1 — Telefone</label>
+              <input class="field-input" type="text" id="ref1_tel" name="ref1_tel" placeholder="(00) 00000-0000" maxlength="15" />
+            </div>
+            <div>
+              <label class="field-label" for="ref2_nome">Referência 2 — Nome</label>
+              <input class="field-input" type="text" id="ref2_nome" name="ref2_nome" placeholder="Nome do contato" />
+            </div>
+            <div>
+              <label class="field-label" for="ref2_tel">Referência 2 — Telefone</label>
+              <input class="field-input" type="text" id="ref2_tel" name="ref2_tel" placeholder="(00) 00000-0000" maxlength="15" />
+            </div>
+            <div>
+              <label class="field-label" for="ref3_nome">Referência 3 — Nome</label>
+              <input class="field-input" type="text" id="ref3_nome" name="ref3_nome" placeholder="Nome do contato" />
+            </div>
+            <div>
+              <label class="field-label" for="ref3_tel">Referência 3 — Telefone</label>
+              <input class="field-input" type="text" id="ref3_tel" name="ref3_tel" placeholder="(00) 00000-0000" maxlength="15" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Profissional -->
+        <div class="sub-section mb-4">
+          <p class="sub-section-title">Histórico Profissional</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label class="field-label" for="ultima_empresa">Última Empresa</label>
+              <input class="field-input" type="text" id="ultima_empresa" name="ultima_empresa" placeholder="Nome da empresa" />
+            </div>
+            <div>
+              <label class="field-label" for="tel_empresa">Telefone da Empresa</label>
+              <input class="field-input" type="text" id="tel_empresa" name="tel_empresa" placeholder="(00) 0000-0000" maxlength="14" />
+            </div>
+            <div>
+              <label class="field-label" for="periodo_servico">Período de Prestação de Serviços</label>
+              <input class="field-input" type="text" id="periodo_servico" name="periodo_servico" placeholder="Ex: Jan/2020 – Dez/2023" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Bancário -->
+        <div class="sub-section">
+          <p class="sub-section-title">Dados Bancários</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="field-label" for="banco">Banco</label>
+              <input class="field-input" type="text" id="banco" name="banco" placeholder="Nome ou código do banco" />
+            </div>
+            <div>
+              <label class="field-label" for="agencia">Agência</label>
+              <input class="field-input" type="text" id="agencia" name="agencia" placeholder="0000-0" />
+            </div>
+            <div>
+              <label class="field-label" for="conta">Conta</label>
+              <input class="field-input" type="text" id="conta" name="conta" placeholder="00000-0" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 2: PROPRIETÁRIO DO VEÍCULO -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-badge">02</span>
+          <span class="section-title">Proprietário do Veículo</span>
+        </div>
+        <div class="mb-4">
+          <label class="checkbox-label">
+            <input type="checkbox" id="motorista_e_proprietario" name="motorista_e_proprietario" />
+            <span>O motorista é o proprietário do veículo? (Se marcado, esta seção será ocultada e os dados serão copiados automaticamente)</span>
+          </label>
+        </div>
+        <div id="proprietario-section">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            <div class="lg:col-span-2">
+              <label class="field-label" for="prop_nome">Nome / Razão Social</label>
+              <input class="field-input" type="text" id="prop_nome" name="prop_nome" placeholder="Nome completo ou Razão Social" />
+            </div>
+            <div>
+              <label class="field-label" for="prop_cpf_cnpj">CPF / CNPJ</label>
+              <input class="field-input" type="text" id="prop_cpf_cnpj" name="prop_cpf_cnpj" placeholder="CPF ou CNPJ" maxlength="18" />
+            </div>
+            <div>
+              <label class="field-label" for="prop_rg">RG</label>
+              <input class="field-input" type="text" id="prop_rg" name="prop_rg" placeholder="RG do proprietário" />
+            </div>
+            <div>
+              <label class="field-label" for="prop_rg_estado">Estado Emissor RG</label>
+              <select class="field-input" id="prop_rg_estado" name="prop_rg_estado">
+                <option value="">Selecione...</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="prop_rg_emissao">Data Emissão RG</label>
+              <input class="field-input" type="date" id="prop_rg_emissao" name="prop_rg_emissao" />
+            </div>
+            <div>
+              <label class="field-label" for="prop_rntrc">RNTRC (ANTT)</label>
+              <input class="field-input" type="text" id="prop_rntrc" name="prop_rntrc" placeholder="Nº RNTRC (ANTT) do proprietário" />
+            </div>
+          </div>
+          <div class="sub-section mb-4">
+            <p class="sub-section-title">Endereço do Proprietário</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label class="field-label" for="prop_cep">CEP</label>
+                <input class="field-input" type="text" id="prop_cep" name="prop_cep" placeholder="00000-000" maxlength="9" />
+              </div>
+              <div class="lg:col-span-2">
+                <label class="field-label" for="prop_endereco">Endereço</label>
+                <input class="field-input" type="text" id="prop_endereco" name="prop_endereco" placeholder="Rua, Av, número..." />
+              </div>
+              <div>
+                <label class="field-label" for="prop_bairro">Bairro</label>
+                <input class="field-input" type="text" id="prop_bairro" name="prop_bairro" placeholder="Bairro" />
+              </div>
+              <div>
+                <label class="field-label" for="prop_cidade">Cidade</label>
+                <input class="field-input" type="text" id="prop_cidade" name="prop_cidade" placeholder="Cidade" />
+              </div>
+              <div>
+                <label class="field-label" for="prop_estado">Estado</label>
+                <select class="field-input" id="prop_estado" name="prop_estado">
+                  <option value="">Selecione...</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="sub-section">
+            <p class="sub-section-title">Contatos do Proprietário</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="field-label" for="prop_tel_res">Telefone Residencial</label>
+                <input class="field-input" type="text" id="prop_tel_res" name="prop_tel_res" placeholder="(00) 0000-0000" maxlength="14" />
+              </div>
+              <div>
+                <label class="field-label" for="prop_tel_ref">Telefone Referência</label>
+                <input class="field-input" type="text" id="prop_tel_ref" name="prop_tel_ref" placeholder="(00) 00000-0000" maxlength="15" />
+              </div>
+              <div>
+                <label class="field-label" for="prop_email">E-mail</label>
+                <input class="field-input" type="email" id="prop_email" name="prop_email" placeholder="email@exemplo.com" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 3: DADOS DO VEÍCULO -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-badge">03</span>
+          <span class="section-title">Dados do Veículo</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label class="field-label" for="placa">Placa <span class="required">*</span></label>
+            <input class="field-input" type="text" id="placa" name="placa" placeholder="AAA-0000 ou AAA-0A00" maxlength="8" required />
+          </div>
+          <div>
+            <label class="field-label" for="placa_cidade">Cidade do Emplacamento</label>
+            <input class="field-input" type="text" id="placa_cidade" name="placa_cidade" placeholder="Cidade" />
+          </div>
+          <div>
+            <label class="field-label" for="placa_estado">Estado do Emplacamento</label>
+            <select class="field-input" id="placa_estado" name="placa_estado">
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="renavam">RENAVAM</label>
+            <input class="field-input" type="text" id="renavam" name="renavam" placeholder="Código RENAVAM" />
+          </div>
+          <div>
+            <label class="field-label" for="antt">ANTT</label>
+            <input class="field-input" type="text" id="antt" name="antt" placeholder="Nº autorização ANTT" />
+          </div>
+          <div>
+            <label class="field-label" for="marca">Marca</label>
+            <input class="field-input" type="text" id="marca" name="marca" placeholder="Ex: Volkswagen" />
+          </div>
+          <div>
+            <label class="field-label" for="modelo">Modelo</label>
+            <input class="field-input" type="text" id="modelo" name="modelo" placeholder="Ex: Constellation" />
+          </div>
+          <div>
+            <label class="field-label" for="chassi">Chassi</label>
+            <input class="field-input" type="text" id="chassi" name="chassi" placeholder="Número do chassi" />
+          </div>
+          <div>
+            <label class="field-label" for="ano">Ano</label>
+            <input class="field-input" type="text" id="ano" name="ano" placeholder="Ex: 2022" maxlength="4" />
+          </div>
+          <div>
+            <label class="field-label" for="cor">Cor</label>
+            <input class="field-input" type="text" id="cor" name="cor" placeholder="Ex: Branco" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 4: INFORMAÇÕES COMPLEMENTARES -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-badge">04</span>
+          <span class="section-title">Informações Complementares</span>
+        </div>
+
+        <!-- Roubo -->
+        <div class="sub-section mb-4">
+          <p class="sub-section-title">Histórico de Roubo</p>
+          <label class="field-label mb-2 block">Já foi vítima de roubo?</label>
+          <div class="radio-group mb-3">
+            <label class="radio-option"><input type="radio" name="vitima_roubo" value="Sim" /> Sim</label>
+            <label class="radio-option"><input type="radio" name="vitima_roubo" value="Não" checked /> Não</label>
+          </div>
+          <div id="roubo-vezes-wrapper" class="hidden">
+            <label class="field-label" for="roubo_vezes">Quantas vezes?</label>
+            <input class="field-input w-32" type="number" id="roubo_vezes" name="roubo_vezes" min="1" placeholder="Ex: 2" />
+          </div>
+        </div>
+
+        <!-- Acidente -->
+        <div class="sub-section mb-4">
+          <p class="sub-section-title">Histórico de Acidentes</p>
+          <label class="field-label mb-2 block">Já se envolveu em acidente?</label>
+          <div class="radio-group mb-3">
+            <label class="radio-option"><input type="radio" name="envolvido_acidente" value="Sim" /> Sim</label>
+            <label class="radio-option"><input type="radio" name="envolvido_acidente" value="Não" checked /> Não</label>
+          </div>
+          <div id="acidente-vezes-wrapper" class="hidden">
+            <label class="field-label" for="acidente_vezes">Quantas vezes?</label>
+            <input class="field-input w-32" type="number" id="acidente_vezes" name="acidente_vezes" min="1" placeholder="Ex: 1" />
+          </div>
+        </div>
+
+        <!-- Transportou para esta empresa -->
+        <div class="sub-section mb-4">
+          <p class="sub-section-title">Histórico com a Empresa</p>
+          <label class="field-label mb-2 block">Já transportou para esta empresa?</label>
+          <div class="radio-group mb-3">
+            <label class="radio-option"><input type="radio" name="transportou_empresa" value="Sim" /> Sim</label>
+            <label class="radio-option"><input type="radio" name="transportou_empresa" value="Não" checked /> Não</label>
+          </div>
+          <div id="empresa-hist-wrapper" class="hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="field-label" for="empresa_vezes">Quantas vezes?</label>
+                <input class="field-input" type="number" id="empresa_vezes" name="empresa_vezes" min="1" placeholder="Número de vezes" />
+              </div>
+              <div>
+                <label class="field-label" for="empresa_periodo">Período (Anos/Meses/Dias)</label>
+                <input class="field-input" type="text" id="empresa_periodo" name="empresa_periodo" placeholder="Ex: 2 anos" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rastreador -->
+        <div class="sub-section">
+          <p class="sub-section-title">Rastreamento do Veículo</p>
+          <label class="field-label mb-2 block">O veículo possui rastreador?</label>
+          <div class="radio-group mb-3">
+            <label class="radio-option"><input type="radio" name="tem_rastreador" value="Sim" /> Sim</label>
+            <label class="radio-option"><input type="radio" name="tem_rastreador" value="Não" checked /> Não</label>
+          </div>
+          <div id="rastreador-wrapper" class="hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="field-label" for="rastreador_tipo">Qual o rastreador?</label>
+                <select class="field-input" id="rastreador_tipo" name="rastreador_tipo">
+                  <option value="">Selecione o rastreador...</option>
+                  <optgroup label="Rastreamento Veicular">
+                    <option value="Sascar">Sascar</option>
+                    <option value="Onixsat">Onixsat</option>
+                    <option value="Sighra">Sighra</option>
+                    <option value="Autotrac">Autotrac</option>
+                    <option value="Jabur">Jabur</option>
+                    <option value="Tracker">Tracker</option>
+                    <option value="Cobli">Cobli</option>
+                    <option value="Teltonika">Teltonika</option>
+                    <option value="TrackFiber">TrackFiber</option>
+                    <option value="Omnilink">Omnilink</option>
+                    <option value="Octotrack">Octotrack</option>
+                    <option value="Geofusion">Geofusion</option>
+                    <option value="Positron">Positron</option>
+                    <option value="OpenTech">OpenTech</option>
+                    <option value="Isorastreamento">Isorastreamento</option>
+                    <option value="FleetMind">FleetMind</option>
+                    <option value="Webfleet (TomTom)">Webfleet (TomTom)</option>
+                  </optgroup>
+                  <optgroup label="Outros">
+                    <option value="Outro">Outro (especificar)</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div id="rastreador-outro-wrapper" class="hidden">
+                <label class="field-label" for="rastreador_outro">Especifique o rastreador</label>
+                <input class="field-input" type="text" id="rastreador_outro" name="rastreador_outro" placeholder="Nome do rastreador" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <!-- T4S / 3S -->
+        <div class="sub-section" style="margin-top:16px;">
+          <p class="sub-section-title">Configuração do Conjunto</p>
+          <label class="field-label mb-2 block">Possui T4S ou 3S?</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="possui_t4s_3s" value="T4S" /> T4S</label>
+            <label class="radio-option"><input type="radio" name="possui_t4s_3s" value="3S" /> 3S</label>
+            <label class="radio-option"><input type="radio" name="possui_t4s_3s" value="Ambos" /> Ambos</label>
+            <label class="radio-option"><input type="radio" name="possui_t4s_3s" value="Não" checked /> Não possui</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 05: DOCUMENTOS -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-badge">05</span>
+          <span class="section-title">Documentos Obrigatórios</span>
+        </div>
+        <p style="font-size:13px; color:#6C757D; margin-bottom:20px; font-family:'Roboto',sans-serif;">
+          Anexe os documentos abaixo. Formatos aceitos: <strong>PDF, JPG, PNG</strong> (máx. 10 MB por arquivo).
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <!-- CNH -->
+          <div>
+            <label class="field-label" for="doc_cnh">CNH <span class="required">*</span></label>
+            <label for="doc_cnh" class="upload-zone" id="zone-cnh">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#AC2429" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+              </svg>
+              <span id="label-text-cnh" class="upload-label-text">Clique para anexar a CNH</span>
+              <span class="upload-hint">PDF, JPG ou PNG</span>
+              <input type="file" id="doc_cnh" name="doc_cnh" accept=".pdf,.jpg,.jpeg,.png" required class="hidden" onchange="updateFileLabel(this,'label-text-cnh','zone-cnh')" />
+            </label>
+          </div>
+
+          <!-- Documento do Veículo -->
+          <div>
+            <label class="field-label" for="doc_veiculo">Documento do Veículo (CRLV) <span class="required">*</span></label>
+            <label for="doc_veiculo" class="upload-zone" id="zone-veiculo">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#AC2429" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+              </svg>
+              <span id="label-text-veiculo" class="upload-label-text">Clique para anexar o CRLV</span>
+              <span class="upload-hint">PDF, JPG ou PNG</span>
+              <input type="file" id="doc_veiculo" name="doc_veiculo" accept=".pdf,.jpg,.jpeg,.png" required class="hidden" onchange="updateFileLabel(this,'label-text-veiculo','zone-veiculo')" />
+            </label>
+          </div>
+
+          <!-- Cavalo ou Carreta -->
+          <div>
+            <label class="field-label" for="doc_cavalo_carreta">Foto do Cavalo ou Carreta <span class="required">*</span></label>
+            <div class="upload-zone" id="zone-cavalo" style="gap:12px; padding:20px 16px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#AC2429" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/>
+              </svg>
+              <span id="label-text-cavalo" class="upload-label-text" style="font-weight:500;">Foto do veículo</span>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; width:100%;">
+                <!-- Galeria / Arquivo -->
+                <label for="doc_cavalo_carreta" style="
+                  display:inline-flex; align-items:center; gap:6px;
+                  background:#fff; border:1px solid #DFDFDF;
+                  padding:7px 14px; cursor:pointer; font-size:12px;
+                  font-family:'Roboto',sans-serif; color:#232323;
+                  transition:border-color 0.2s;
+                " onmouseover="this.style.borderColor='#AC2429'" onmouseout="this.style.borderColor='#DFDFDF'">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 9.75h.008v.008H3V9.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+                  </svg>
+                  Galeria / Arquivo
+                </label>
+                <input type="file" id="doc_cavalo_carreta" name="doc_cavalo_carreta"
+                       accept="image/*,.pdf" required class="hidden"
+                       onchange="updateFileLabel(this,'label-text-cavalo','zone-cavalo')" />
+
+                <!-- Câmera -->
+                <label for="doc_cavalo_camera" style="
+                  display:inline-flex; align-items:center; gap:6px;
+                  background:#AC2429; border:1px solid #AC2429;
+                  padding:7px 14px; cursor:pointer; font-size:12px;
+                  font-family:'Roboto',sans-serif; color:#fff;
+                  transition:background 0.2s;
+                " onmouseover="this.style.background='#8a1c20'" onmouseout="this.style.background='#AC2429'">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"/>
+                  </svg>
+                  Tirar Foto
+                </label>
+                <input type="file" id="doc_cavalo_camera" name="doc_cavalo_camera"
+                       accept="image/*" capture="environment" class="hidden"
+                       onchange="updateFileLabel(this,'label-text-cavalo','zone-cavalo')" />
+              </div>
+              <span class="upload-hint">JPG, PNG ou PDF — câmera disponível no celular</span>
+            </div>
+          </div>
+
+
+          <!-- RNTRC (ANTT) -->
+          <div>
+            <label class="field-label" for="doc_rntrc">RNTRC (ANTT) <span class="required">*</span></label>
+            <label for="doc_rntrc" class="upload-zone" id="zone-rntrc">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#AC2429" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+              </svg>
+              <span id="label-text-rntrc" class="upload-label-text">Clique para anexar o RNTRC</span>
+              <span class="upload-hint">PDF, JPG ou PNG</span>
+              <input type="file" id="doc_rntrc" name="doc_rntrc" accept=".pdf,.jpg,.jpeg,.png" required class="hidden" onchange="updateFileLabel(this,'label-text-rntrc','zone-rntrc')" />
+            </label>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- SEÇÃO 6: TERMOS -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-badge">06</span>
+          <span class="section-title">Declarações e Autorização</span>
+        </div>
+        <div class="space-y-4">
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <label class="checkbox-label" id="label-termo1">
+              <input type="checkbox" id="termo_veracidade" name="termo_veracidade" required />
+              <span>
+                <strong>Declaração de Veracidade:</strong> Declaro que todas as informações fornecidas neste formulário são verdadeiras e completas, assumindo responsabilidade civil e criminal por qualquer informação falsa ou omissão.
+              </span>
+            </label>
+          </div>
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <label class="checkbox-label" id="label-termo2">
+              <input type="checkbox" id="termo_pesquisa" name="termo_pesquisa" required />
+              <span>
+                <strong>Autorização de Pesquisa:</strong> Autorizo expressamente a empresa a efetuar pesquisas em bancos de dados públicos e privados, incluindo consultas a órgãos de proteção ao crédito, cadastros de segurança e demais registros legalmente acessíveis, para fins de validação deste cadastro.
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+        <p class="text-sm text-slate-500">Campos marcados com <span class="text-red-500 font-bold">*</span> são obrigatórios</p>
+        <button type="submit" class="btn-submit" id="btn-submit">
+          <div class="spinner" id="btn-spinner"></div>
+          <span id="btn-text">Enviar Cadastro</span>
+          <svg id="btn-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+      </div>
+
+    </form>
+  </main>
+
+  <footer style="background:#232323; color:#828282; text-align:center; font-size:12px; padding:18px 16px; font-family:'Roboto',sans-serif;">
+    <div style="max-width:900px; margin:0 auto; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px;">
+      <img src="https://acertaexpress.com.br/images/logo-black-white.png" alt="Acerta Express" style="height:28px; width:auto; opacity:0.6;" />
+      <span>&copy; 2025 Acerta Express — Cadastro de Motorista Agregado. Todos os direitos reservados.</span>
+    </div>
+  </footer>
+
+<script>
+/* =========================================================
+   CONSTANTES
+========================================================= */
+const WEBHOOK_URL = 'https://SEU_WEBHOOK_AQUI.com/webhook';
+
+const ESTADOS_BR = [
+  'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
+  'MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC',
+  'SP','SE','TO'
+];
+
+/* =========================================================
+   POPULAR SELECTS DE ESTADO
+========================================================= */
+function populateEstados() {
+  const selects = document.querySelectorAll('select[id$="_estado"], #estado, #prop_estado, #placa_estado, #cnh_uf');
+  selects.forEach(sel => {
+    ESTADOS_BR.forEach(uf => {
+      const opt = document.createElement('option');
+      opt.value = uf;
+      opt.textContent = uf;
+      sel.appendChild(opt);
+    });
+  });
+}
+populateEstados();
+
+/* =========================================================
+   MÁSCARAS DE INPUT
+========================================================= */
+function applyMask(value, mask) {
+  let v = value.replace(/\D/g, '');
+  let r = '';
+  let vi = 0;
+  for (let mi = 0; mi < mask.length && vi < v.length; mi++) {
+    if (mask[mi] === '0') { r += v[vi++]; }
+    else { r += mask[mi]; if (v[vi] && !/\d/.test(mask[mi+1]) ) { /* keep */ } }
+  }
+  return r;
+}
+
+function maskCPF(v) {
+  v = v.replace(/\D/g,'').slice(0,11);
+  return v.replace(/(\d{3})(\d)/, '$1.$2')
+          .replace(/(\d{3})(\d)/, '$1.$2')
+          .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+}
+function maskCNPJ(v) {
+  v = v.replace(/\D/g,'').slice(0,14);
+  return v.replace(/(\d{2})(\d)/, '$1.$2')
+          .replace(/(\d{3})(\d)/, '$1.$2')
+          .replace(/(\d{3})(\d)/, '$1/$2')
+          .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+}
+function maskCEP(v) {
+  v = v.replace(/\D/g,'').slice(0,8);
+  return v.replace(/(\d{5})(\d)/, '$1-$2');
+}
+function maskPhone(v) {
+  v = v.replace(/\D/g,'').slice(0,11);
+  if (v.length <= 10) {
+    return v.replace(/(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{4})(\d)/, '$1-$2');
+  }
+  return v.replace(/(\d{2})(\d)/, '($1) $2')
+          .replace(/(\d{5})(\d)/, '$1-$2');
+}
+function maskCPF_CNPJ(v) {
+  const digits = v.replace(/\D/g,'');
+  return digits.length <= 11 ? maskCPF(digits) : maskCNPJ(digits);
+}
+
+document.getElementById('cpf').addEventListener('input', function(e) {
+  e.target.value = maskCPF(e.target.value);
+});
+document.getElementById('prop_cpf_cnpj').addEventListener('input', function(e) {
+  e.target.value = maskCPF_CNPJ(e.target.value);
+});
+['cep','prop_cep'].forEach(id => {
+  document.getElementById(id).addEventListener('input', function(e) {
+    e.target.value = maskCEP(e.target.value);
+  });
+});
+['celular','ref1_tel','ref2_tel','ref3_tel','prop_tel_ref'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', function(e) {
+    e.target.value = maskPhone(e.target.value);
+  });
+});
+['tel_residencial','tel_empresa','prop_tel_res'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', function(e) {
+    e.target.value = maskPhone(e.target.value);
+  });
+});
+
+// Placa: AAA-0000 ou AAA-0A00
+document.getElementById('placa').addEventListener('input', function(e) {
+  let v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if (v.length > 7) v = v.slice(0,7);
+  if (v.length > 3) v = v.slice(0,3) + '-' + v.slice(3);
+  e.target.value = v;
+});
+
+/* =========================================================
+   TOGGLE PROPRIETÁRIO
+========================================================= */
+document.getElementById('motorista_e_proprietario').addEventListener('change', function() {
+  const sec = document.getElementById('proprietario-section');
+  sec.style.display = this.checked ? 'none' : 'block';
+});
+
+/* =========================================================
+   TOGGLE CAMPOS CONDICIONAIS
+========================================================= */
+function setupRadioToggle(radioName, wrapperID) {
+  document.querySelectorAll(`input[name="${radioName}"]`).forEach(r => {
+    r.addEventListener('change', function() {
+      const wrapper = document.getElementById(wrapperID);
+      wrapper.classList.toggle('hidden', this.value !== 'Sim');
+    });
+  });
+}
+setupRadioToggle('vitima_roubo', 'roubo-vezes-wrapper');
+setupRadioToggle('envolvido_acidente', 'acidente-vezes-wrapper');
+setupRadioToggle('transportou_empresa', 'empresa-hist-wrapper');
+setupRadioToggle('tem_rastreador', 'rastreador-wrapper');
+
+// Mostrar campo "Outro" quando selecionado no select de rastreador
+document.getElementById('rastreador_tipo').addEventListener('change', function() {
+  const outroWrapper = document.getElementById('rastreador-outro-wrapper');
+  outroWrapper.classList.toggle('hidden', this.value !== 'Outro');
+  if (this.value !== 'Outro') document.getElementById('rastreador_outro').value = '';
+});
+
+/* =========================================================
+   VALIDAÇÃO BÁSICA
+========================================================= */
+function getVal(id) { return document.getElementById(id)?.value.trim() || ''; }
+function getChecked(id) { return document.getElementById(id)?.checked || false; }
+function getRadio(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : '';
+}
+
+function showAlert(type, html) {
+  const area = document.getElementById('alert-area');
+  area.innerHTML = `<div class="alert-${type}">${html}</div>`;
+  area.classList.remove('hidden');
+  area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function hideAlert() {
+  const area = document.getElementById('alert-area');
+  area.classList.add('hidden');
+  area.innerHTML = '';
+}
+
+function validate() {
+  const errors = [];
+  if (!getVal('nome')) errors.push('Nome Completo é obrigatório.');
+  if (!getVal('cpf') || getVal('cpf').replace(/\D/g,'').length < 11) errors.push('CPF inválido.');
+  if (!getVal('data_nascimento')) errors.push('Data de Nascimento é obrigatória.');
+  if (!getVal('cnh')) errors.push('CNH é obrigatória.');
+  if (!getVal('celular')) errors.push('Celular/WhatsApp é obrigatório.');
+  if (!getVal('placa')) errors.push('Placa do veículo é obrigatória.');
+  if (!getChecked('termo_veracidade')) errors.push('Você deve aceitar a Declaração de Veracidade.');
+  if (!getChecked('termo_pesquisa')) errors.push('Você deve aceitar a Autorização de Pesquisa.');
+  return errors;
+}
+
+/* =========================================================
+   UPLOAD DE ARQUIVOS
+========================================================= */
+function updateFileLabel(input, labelId, zoneId) {
+  const label = document.getElementById(labelId);
+  const zone  = document.getElementById(zoneId);
+  if (input.files && input.files[0]) {
+    const name = input.files[0].name;
+    const size = (input.files[0].size / 1024 / 1024).toFixed(2);
+    label.textContent = '✅ ' + name + ' (' + size + ' MB)';
+    label.style.color = '#166534';
+    zone.classList.add('has-file');
+  }
+}
+
+/* =========================================================
+   COLETA DOS DADOS → JSON
+========================================================= */
+function collectData() {
+  const isMotoristaProp = getChecked('motorista_e_proprietario');
+
+  const motorista = {
+    dados_pessoais: {
+      nome: getVal('nome'), cpf: getVal('cpf'), rg: getVal('rg'),
+      rg_estado_emissor: getVal('rg_estado'), rg_data_emissao: getVal('rg_emissao'),
+      data_nascimento: getVal('data_nascimento'), nome_pai: getVal('nome_pai'),
+      nome_mae: getVal('nome_mae'),
+    },
+    cnh_rntrc: {
+      rntrc: getVal('rntrc'), cnh: getVal('cnh'), cnh_registro: getVal('cnh_registro'),
+      cnh_uf_emissora: getVal('cnh_uf'), cnh_primeira_habilitacao: getVal('cnh_primeira_hab'),
+      cnh_vencimento: getVal('cnh_vencimento'), cnh_categoria: getVal('cnh_categoria'),
+    },
+    endereco: {
+      cep: getVal('cep'), logradouro: getVal('endereco'), bairro: getVal('bairro'),
+      cidade: getVal('cidade'), estado: getVal('estado'),
+    },
+    regiao: getRadio('regiao'),
+    contato: {
+      celular_whatsapp: getVal('celular'), telefone_residencial: getVal('tel_residencial'),
+      email: getVal('email'),
+    },
+    referencias: [
+      { nome: getVal('ref1_nome'), telefone: getVal('ref1_tel') },
+      { nome: getVal('ref2_nome'), telefone: getVal('ref2_tel') },
+      { nome: getVal('ref3_nome'), telefone: getVal('ref3_tel') },
+    ].filter(r => r.nome || r.telefone),
+    historico_profissional: {
+      ultima_empresa: getVal('ultima_empresa'), telefone_empresa: getVal('tel_empresa'),
+      periodo_prestacao: getVal('periodo_servico'),
+    },
+    dados_bancarios: {
+      banco: getVal('banco'), agencia: getVal('agencia'), conta: getVal('conta'),
+    },
+  };
+
+  let proprietario;
+  if (isMotoristaProp) {
+    proprietario = {
+      motorista_e_proprietario: true,
+      nome: motorista.dados_pessoais.nome,
+      cpf_cnpj: motorista.dados_pessoais.cpf,
+      rg: motorista.dados_pessoais.rg,
+      rg_estado_emissor: motorista.dados_pessoais.rg_estado_emissor,
+      rg_data_emissao: motorista.dados_pessoais.rg_data_emissao,
+      rntrc: motorista.cnh_rntrc.rntrc,
+      endereco: { ...motorista.endereco },
+      contato: {
+        telefone_residencial: motorista.contato.telefone_residencial,
+        telefone_referencia: '',
+        email: motorista.contato.email,
+      },
+    };
+  } else {
+    proprietario = {
+      motorista_e_proprietario: false,
+      nome: getVal('prop_nome'), cpf_cnpj: getVal('prop_cpf_cnpj'),
+      rg: getVal('prop_rg'), rg_estado_emissor: getVal('prop_rg_estado'),
+      rg_data_emissao: getVal('prop_rg_emissao'), rntrc: getVal('prop_rntrc'),
+      endereco: {
+        cep: getVal('prop_cep'), logradouro: getVal('prop_endereco'),
+        bairro: getVal('prop_bairro'), cidade: getVal('prop_cidade'),
+        estado: getVal('prop_estado'),
+      },
+      contato: {
+        telefone_residencial: getVal('prop_tel_res'),
+        telefone_referencia: getVal('prop_tel_ref'),
+        email: getVal('prop_email'),
+      },
+    };
+  }
+
+  const veiculo = {
+    placa: getVal('placa'), cidade_emplacamento: getVal('placa_cidade'),
+    estado_emplacamento: getVal('placa_estado'), renavam: getVal('renavam'),
+    antt: getVal('antt'),
+    marca: getVal('marca'), modelo: getVal('modelo'), chassi: getVal('chassi'),
+    ano: getVal('ano'), cor: getVal('cor'),
+  };
+
+  const complementares = {
+    vitima_roubo: getRadio('vitima_roubo'),
+    roubo_vezes: getRadio('vitima_roubo') === 'Sim' ? getVal('roubo_vezes') : null,
+    envolvido_acidente: getRadio('envolvido_acidente'),
+    acidente_vezes: getRadio('envolvido_acidente') === 'Sim' ? getVal('acidente_vezes') : null,
+    transportou_para_empresa: getRadio('transportou_empresa'),
+    empresa_vezes: getRadio('transportou_empresa') === 'Sim' ? getVal('empresa_vezes') : null,
+    empresa_periodo: getRadio('transportou_empresa') === 'Sim' ? getVal('empresa_periodo') : null,
+    veiculo_tem_rastreador: getRadio('tem_rastreador'),
+    rastreador_tipo: getRadio('tem_rastreador') === 'Sim'
+      ? (getVal('rastreador_tipo') === 'Outro' ? getVal('rastreador_outro') : getVal('rastreador_tipo'))
+      : null,
+    possui_t4s_3s: getRadio('possui_t4s_3s'),
+  };
+
+  const termos = {
+    aceite_veracidade: getChecked('termo_veracidade'),
+    aceite_pesquisa: getChecked('termo_pesquisa'),
+    data_aceite: new Date().toISOString(),
+  };
+
+  return { motorista, proprietario, veiculo, complementares, termos };
+}
+
+/* =========================================================
+   LOADING STATE
+========================================================= */
+function setLoading(loading) {
+  const btn = document.getElementById('btn-submit');
+  const spinner = document.getElementById('btn-spinner');
+  const text = document.getElementById('btn-text');
+  const icon = document.getElementById('btn-icon');
+  btn.disabled = loading;
+  spinner.style.display = loading ? 'block' : 'none';
+  text.textContent = loading ? 'Enviando...' : 'Enviar Cadastro';
+  icon.style.display = loading ? 'none' : 'block';
+}
+
+/* =========================================================
+   SUBMIT
+========================================================= */
+document.getElementById('form-cadastro').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  hideAlert();
+
+  const errors = validate();
+  if (errors.length > 0) {
+    showAlert('error', '<strong>Por favor, corrija os erros abaixo:</strong><ul class="mt-2 list-disc list-inside space-y-1">' +
+      errors.map(er => `<li>${er}</li>`).join('') + '</ul>');
+    return;
+  }
+
+  const payload = collectData();
+  setLoading(true);
+
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      showAlert('success', `
+        <svg class="w-8 h-8 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div>
+          <p class="font-bold text-green-800">Cadastro enviado com sucesso!</p>
+          <p class="text-green-700 text-sm mt-1">Seus dados foram recebidos e serão analisados em breve. Obrigado!</p>
+        </div>
+      `);
+      document.getElementById('form-cadastro').reset();
+      document.getElementById('proprietario-section').style.display = 'block';
+    } else {
+      const msg = await response.text();
+      showAlert('error', `<strong>Erro ao enviar (${response.status}):</strong> ${msg || 'Tente novamente em instantes.'}`);
+    }
+  } catch (err) {
+    showAlert('error', `<strong>Falha de conexão:</strong> Verifique sua internet e tente novamente. (${err.message})`);
+  } finally {
+    setLoading(false);
+  }
+});
+</script>
+</body>
+</html>
