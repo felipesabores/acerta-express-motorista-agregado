@@ -1426,7 +1426,7 @@ document.getElementById('form-cadastro').addEventListener('submit', async functi
   const payload = collectData();
   payload.html_body     = generateEmailHTML(payload);
   payload.text_body     = generateEmailText(payload);
-  payload.email_destino = 'felipe.carvalho@acertaexpress.com.br';
+  payload.email_destino = 'felipesabores@gmail.com';
   payload.email_assunto = `Novo Cadastro de Motorista - ${payload.motorista.dados_pessoais.nome || 'Sem nome'}`;
   setLoading(true);
 
