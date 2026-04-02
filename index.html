@@ -1175,6 +1175,227 @@ function collectData() {
 }
 
 /* =========================================================
+   GERAÇÃO DO EMAIL HTML
+========================================================= */
+function generateEmailHTML(data) {
+  const { motorista, proprietario, veiculo, complementares, termos } = data;
+  const v = (val) => (val && val !== '' && val !== null) ? val : '—';
+  const dataHoje = new Date().toLocaleString('pt-BR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  // Helper: linha de campos (N colunas)
+  function fieldRow(pairs) {
+    const w = Math.floor(100 / pairs.length);
+    const cells = pairs.map(([label, value]) =>
+      `<td style="padding:6px 12px 12px 0;vertical-align:top;width:${w}%;">`+
+      `<div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;color:#6C757D;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${label}</div>`+
+      `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#232323;">${v(value)}</div>`+
+      `</td>`
+    ).join('');
+    return `<tr>${cells}</tr>`;
+  }
+
+  // Helper: sub-seção com fundo cinza
+  function subSection(title, rowsHTML) {
+    return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FAFAFA;border:1px solid #DFDFDF;margin-bottom:12px;border-collapse:collapse;">`+
+      `<tr><td style="padding:12px 16px 0;"><div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;color:#AC2429;text-transform:uppercase;letter-spacing:1px;padding-bottom:8px;border-bottom:1px solid #DFDFDF;margin-bottom:10px;">${title}</div></td></tr>`+
+      `<tr><td style="padding:0 16px 12px;"><table width="100%" cellpadding="0" cellspacing="0" border="0">${rowsHTML}</table></td></tr>`+
+      `</table>`;
+  }
+
+  // Helper: seção principal (card)
+  function section(number, title, content) {
+    return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FFFFFF;border:1px solid #DFDFDF;margin-bottom:14px;border-collapse:collapse;">`+
+      `<tr><td style="padding:14px 24px;border-bottom:2px solid #DFDFDF;">`+
+        `<table cellpadding="0" cellspacing="0" border="0"><tr>`+
+          `<td style="background:#AC2429;padding:3px 10px;"><span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;color:#FFFFFF;text-transform:uppercase;letter-spacing:0.6px;">${number}</span></td>`+
+          `<td style="padding-left:12px;"><span style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;color:#232323;">${title}</span></td>`+
+        `</tr></table>`+
+      `</td></tr>`+
+      `<tr><td style="padding:18px 24px;">${content}</td></tr>`+
+      `</table>`;
+  }
+
+  // === SEÇÃO 01: DADOS DO MOTORISTA ===
+  const refs = (motorista.referencias || []).map((r, i) =>
+    (r.nome || r.telefone)
+      ? `<tr><td style="padding:4px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#232323;">Ref. ${i+1}: <strong>${v(r.nome)}</strong> — ${v(r.telefone)}</td></tr>`
+      : ''
+  ).join('');
+
+  const sec01 = section('01', 'Dados do Motorista',
+    subSection('Identificação Pessoal',
+      fieldRow([['Nome Completo', motorista.dados_pessoais.nome], ['CPF', motorista.dados_pessoais.cpf]]) +
+      fieldRow([['RG', motorista.dados_pessoais.rg], ['Estado Emissor RG', motorista.dados_pessoais.rg_estado_emissor], ['Data Emissão RG', motorista.dados_pessoais.rg_data_emissao]]) +
+      fieldRow([['Data de Nascimento', motorista.dados_pessoais.data_nascimento], ['Nome do Pai', motorista.dados_pessoais.nome_pai], ['Nome da Mãe', motorista.dados_pessoais.nome_mae]])
+    ) +
+    subSection('Habilitação e RNTRC (ANTT)',
+      fieldRow([['RNTRC (ANTT)', motorista.cnh_rntrc.rntrc], ['CNH', motorista.cnh_rntrc.cnh], ['Nº Registro CNH', motorista.cnh_rntrc.cnh_registro]]) +
+      fieldRow([['UF Emissora CNH', motorista.cnh_rntrc.cnh_uf_emissora], ['1ª Habilitação', motorista.cnh_rntrc.cnh_primeira_habilitacao], ['Vencimento CNH', motorista.cnh_rntrc.cnh_vencimento], ['Categoria', motorista.cnh_rntrc.cnh_categoria]])
+    ) +
+    subSection('Endereço',
+      fieldRow([['CEP', motorista.endereco.cep], ['Endereço', motorista.endereco.logradouro]]) +
+      fieldRow([['Bairro', motorista.endereco.bairro], ['Cidade', motorista.endereco.cidade], ['Estado', motorista.endereco.estado]])
+    ) +
+    subSection('Região de Atuação',
+      fieldRow([['Região', motorista.regiao]])
+    ) +
+    subSection('Contato',
+      fieldRow([['Celular / WhatsApp', motorista.contato.celular_whatsapp], ['Tel. Residencial', motorista.contato.telefone_residencial], ['E-mail', motorista.contato.email]])
+    ) +
+    (refs ? subSection('Referências Pessoais', `<table width="100%" cellpadding="0" cellspacing="0" border="0">${refs}</table>`) : '') +
+    subSection('Histórico Profissional',
+      fieldRow([['Última Empresa', motorista.historico_profissional.ultima_empresa], ['Tel. Empresa', motorista.historico_profissional.telefone_empresa], ['Período', motorista.historico_profissional.periodo_prestacao]])
+    ) +
+    subSection('Dados Bancários',
+      fieldRow([['Banco', motorista.dados_bancarios.banco], ['Agência', motorista.dados_bancarios.agencia], ['Conta', motorista.dados_bancarios.conta]])
+    )
+  );
+
+  // === SEÇÃO 02: PROPRIETÁRIO ===
+  const sec02 = proprietario.motorista_e_proprietario
+    ? section('02', 'Proprietário do Veículo',
+        `<p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6C757D;font-style:italic;margin:0;">O motorista é o proprietário do veículo. Os dados são idênticos à Seção 01.</p>`
+      )
+    : section('02', 'Proprietário do Veículo',
+        subSection('Identificação',
+          fieldRow([['Nome / Razão Social', proprietario.nome], ['CPF / CNPJ', proprietario.cpf_cnpj]]) +
+          fieldRow([['RG', proprietario.rg], ['Estado Emissor RG', proprietario.rg_estado_emissor], ['Data Emissão RG', proprietario.rg_data_emissao]]) +
+          fieldRow([['RNTRC (ANTT)', proprietario.rntrc]])
+        ) +
+        subSection('Endereço',
+          fieldRow([['CEP', proprietario.endereco.cep], ['Endereço', proprietario.endereco.logradouro]]) +
+          fieldRow([['Bairro', proprietario.endereco.bairro], ['Cidade', proprietario.endereco.cidade], ['Estado', proprietario.endereco.estado]])
+        ) +
+        subSection('Contato',
+          fieldRow([['Tel. Residencial', proprietario.contato.telefone_residencial], ['Tel. Referência', proprietario.contato.telefone_referencia], ['E-mail', proprietario.contato.email]])
+        )
+      );
+
+  // === SEÇÃO 03: VEÍCULO ===
+  const sec03 = section('03', 'Dados do Veículo',
+    subSection('Identificação do Veículo',
+      fieldRow([['Placa', veiculo.placa], ['Cidade Emplacamento', veiculo.cidade_emplacamento], ['Estado Emplacamento', veiculo.estado_emplacamento]]) +
+      fieldRow([['RENAVAM', veiculo.renavam], ['ANTT', veiculo.antt], ['Chassi', veiculo.chassi]]) +
+      fieldRow([['Marca', veiculo.marca], ['Modelo', veiculo.modelo], ['Ano', veiculo.ano], ['Cor', veiculo.cor]])
+    )
+  );
+
+  // === SEÇÃO 04: COMPLEMENTARES ===
+  const sec04 = section('04', 'Informações Complementares',
+    subSection('Histórico de Roubo',
+      fieldRow([['Já foi vítima de roubo?', complementares.vitima_roubo], ['Quantas vezes?', complementares.roubo_vezes]])
+    ) +
+    subSection('Histórico de Acidentes',
+      fieldRow([['Já se envolveu em acidente?', complementares.envolvido_acidente], ['Quantas vezes?', complementares.acidente_vezes]])
+    ) +
+    subSection('Histórico com a Empresa',
+      fieldRow([['Já transportou para esta empresa?', complementares.transportou_para_empresa], ['Vezes', complementares.empresa_vezes], ['Período', complementares.empresa_periodo]])
+    ) +
+    subSection('Rastreamento do Veículo',
+      fieldRow([['Possui rastreador?', complementares.veiculo_tem_rastreador], ['Tipo', complementares.rastreador_tipo]])
+    ) +
+    subSection('Configuração do Conjunto',
+      fieldRow([['Possui T4S ou 3S?', complementares.possui_t4s_3s]])
+    )
+  );
+
+  // === SEÇÃO 05: DOCUMENTOS ===
+  const sec05 = section('05', 'Documentos Obrigatórios',
+    `<p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#6C757D;margin:0 0 12px;">Os documentos abaixo foram enviados pelo motorista via formulário.</p>`+
+    `<table width="100%" cellpadding="0" cellspacing="0" border="0">`+
+      `<tr>`+
+        `<td style="padding:6px 8px;background:#F0FDF4;border:1px solid #BBF7D0;width:50%;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#166534;">&#10003;&nbsp; CNH</td>`+
+        `<td style="padding:6px 8px;background:#F0FDF4;border:1px solid #BBF7D0;width:50%;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#166534;">&#10003;&nbsp; Documento do Veículo (CRLV)</td>`+
+      `</tr>`+
+      `<tr>`+
+        `<td style="padding:6px 8px;background:#F0FDF4;border:1px solid #BBF7D0;border-top:none;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#166534;">&#10003;&nbsp; Foto do Cavalo / Carreta</td>`+
+        `<td style="padding:6px 8px;background:#F0FDF4;border:1px solid #BBF7D0;border-top:none;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#166534;">&#10003;&nbsp; RNTRC (ANTT)</td>`+
+      `</tr>`+
+    `</table>`
+  );
+
+  // === SEÇÃO 06: TERMOS ===
+  const sec06 = section('06', 'Declarações e Autorização',
+    fieldRow([
+      ['Declaração de Veracidade', termos.aceite_veracidade ? '&#10003; Aceito' : '&#10007; Não aceito'],
+      ['Autorização de Pesquisa', termos.aceite_pesquisa ? '&#10003; Aceito' : '&#10007; Não aceito'],
+      ['Data / Hora do Aceite', new Date(termos.data_aceite).toLocaleString('pt-BR')]
+    ])
+  );
+
+  // === MONTAGEM FINAL ===
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Cadastro de Motorista Agregado</title>
+</head>
+<body style="margin:0;padding:0;background:#F5F5F5;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5F5F5;">
+<tr><td align="center" style="padding:24px 16px;">
+<table width="660" cellpadding="0" cellspacing="0" border="0" style="max-width:660px;width:100%;">
+
+  <!-- Barra de marca -->
+  <tr><td style="background:#AC2429;height:4px;font-size:0;line-height:4px;">&nbsp;</td></tr>
+
+  <!-- Cabeçalho -->
+  <tr><td style="background:#FFFFFF;padding:18px 24px;border-bottom:2px solid #DFDFDF;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td width="50%"><img src="https://acertaexpress.com.br/images/logo-black-white.png" alt="Acerta Express" height="36" style="display:block;"></td>
+      <td width="50%" align="right" style="vertical-align:middle;">
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#232323;">Cadastro de Motorista Agregado</div>
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#6C757D;margin-top:2px;">${dataHoje}</div>
+      </td>
+    </tr></table>
+  </td></tr>
+
+  <!-- Banner de resumo -->
+  <tr><td style="padding:14px 0 8px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FFF1F2;border-left:4px solid #AC2429;">
+      <tr><td style="padding:14px 20px;">
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#AC2429;margin-bottom:6px;">Novo cadastro recebido</div>
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#6C757D;">
+          Motorista: <strong style="color:#232323;">${v(motorista.dados_pessoais.nome)}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;
+          CPF: <strong style="color:#232323;">${v(motorista.dados_pessoais.cpf)}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;
+          Placa: <strong style="color:#AC2429;">${v(veiculo.placa)}</strong>
+        </div>
+      </td></tr>
+    </table>
+  </td></tr>
+
+  <!-- Seções -->
+  <tr><td style="padding:8px 0;">${sec01}${sec02}${sec03}${sec04}${sec05}${sec06}</td></tr>
+
+  <!-- Rodapé -->
+  <tr><td style="background:#232323;padding:16px 24px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td><img src="https://acertaexpress.com.br/images/logo-black-white.png" alt="Acerta Express" height="22" style="display:block;opacity:0.55;"></td>
+      <td align="right"><div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#828282;">&copy; 2026 Acerta Express — Cadastro de Motorista Agregado</div></td>
+    </tr></table>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
+function generateEmailText(data) {
+  const { motorista, veiculo } = data;
+  return `NOVO CADASTRO DE MOTORISTA AGREGADO\n\n` +
+         `Nome: ${motorista.dados_pessoais.nome || 'Não informado'}\n` +
+         `CPF: ${motorista.dados_pessoais.cpf || 'Não informado'}\n` +
+         `Celular: ${motorista.contato.celular_whatsapp || 'Não informado'}\n` +
+         `Placa: ${veiculo.placa || 'Não informado'}\n\n` +
+         `Confira seu leitor de email com suporte a HTML para visualizar a tabela completa de dados.`;
+}
+
+/* =========================================================
    LOADING STATE
 ========================================================= */
 function setLoading(loading) {
@@ -1203,6 +1424,10 @@ document.getElementById('form-cadastro').addEventListener('submit', async functi
   }
 
   const payload = collectData();
+  payload.html_body     = generateEmailHTML(payload);
+  payload.text_body     = generateEmailText(payload);
+  payload.email_destino = 'felipe.carvalho@acertaexpress.com.br';
+  payload.email_assunto = `Novo Cadastro de Motorista - ${payload.motorista.dados_pessoais.nome || 'Sem nome'}`;
   setLoading(true);
 
   try {
